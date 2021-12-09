@@ -30,11 +30,11 @@ fn main() {
         }
 
         if oxygen.len() > 1 {
-            oxygen = filter(oxygen, bitmask, |value| value & bitmask > 0)
+            filter_values(&mut oxygen, bitmask, |value| value & bitmask > 0)
         }
 
         if co2.len() > 1 {
-            co2 = filter(co2, bitmask, |value| value & bitmask == 0)
+            filter_values(&mut co2, bitmask, |value| value & bitmask == 0)
         }
     }
 
@@ -69,20 +69,17 @@ fn get_count(input: &Vec<u16>, bitmask: u16) -> usize {
     count
 }
 
-fn filter<F: FnMut(&u16) -> bool>(input: Vec<u16>, bitmask: u16, mut condition: F) -> Vec<u16> {
+fn filter_values<F: FnMut(&u16) -> bool>(input: &mut Vec<u16>, bitmask: u16, mut condition: F) {
     let ones = get_count(&input, bitmask);
     if ones == 0 {
-        return input;
+        return;
     }
 
     let zeros = input.len() - ones;
 
     if ones >= zeros {
-        input.into_iter().filter(condition).collect()
+        input.retain(condition);
     } else {
-        input
-            .into_iter()
-            .filter(|value| !condition(value))
-            .collect()
+        input.retain(|value| !condition(value));
     }
 }
