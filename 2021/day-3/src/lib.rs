@@ -4,26 +4,12 @@ use std::{
 };
 
 pub fn get_input() -> Vec<u16> {
-    // test_input()
-    real_input()
-}
+    let mut args = std::env::args();
+    args.next();
 
-#[allow(dead_code)]
-fn test_input() -> Vec<u16> {
-    let values = [
-        "00100", "11110", "10110", "10111", "10101", "01111", "00111", "11100", "10000", "11001",
-        "00010", "01010",
-    ];
+    let file = File::open(&args.next().expect("reading first argument (input file)"))
+        .expect("opening input file");
 
-    values
-        .iter()
-        .map(|line| u16::from_str_radix(&line, 2).unwrap())
-        .collect()
-}
-
-#[allow(dead_code)]
-fn real_input() -> Vec<u16> {
-    let file = File::open("./input.txt").expect("opening input file");
     let reader = BufReader::new(file);
     reader
         .lines()

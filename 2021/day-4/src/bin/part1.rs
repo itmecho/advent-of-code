@@ -1,5 +1,5 @@
 fn main() {
-    let (numbers, mut boards) = day_4::load_game(false);
+    let (numbers, mut boards) = day_4::load_game();
     for n in numbers {
         for (idx, board) in boards.iter_mut().enumerate() {
             let coordinates = board.mark_number(n);

@@ -1,5 +1,5 @@
 fn main() {
-    let (numbers, mut boards) = day_4::load_game(false);
+    let (numbers, mut boards) = day_4::load_game();
     let board_count = boards.len();
     let mut winning_boards = vec![];
     let mut last_call = 0;

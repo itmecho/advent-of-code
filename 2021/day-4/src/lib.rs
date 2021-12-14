@@ -63,10 +63,11 @@ pub struct Node {
     value: usize,
 }
 
-pub fn load_game(test: bool) -> (Vec<usize>, Vec<Board>) {
-    let filename = if test { "input.test.txt" } else { "input.txt" };
+pub fn load_game() -> (Vec<usize>, Vec<Board>) {
+    let mut args = std::env::args();
+    args.next();
 
-    let f = File::open(filename).unwrap();
+    let f = File::open(args.next().expect("reading first argument (input file)")).unwrap();
     let reader = BufReader::new(f);
     let mut lines = reader
         .lines()

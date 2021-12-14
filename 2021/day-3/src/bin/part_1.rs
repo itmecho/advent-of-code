@@ -1,5 +1,6 @@
 fn main() {
     let input = day_3::get_input();
+
     let threshold = input.len() / 2;
     let mut counts = [0; 16];
 
