@@ -1,7 +1,55 @@
+use std::io::{BufRead, BufReader, Read};
+
 fn main() {
-    let input = day_3::get_input();
+    let mut cli = common::Cli::new(part_1, part_2);
+    cli.run();
+}
+
+fn part_1(input: &mut dyn Read) {
+    let reader = BufReader::new(input);
+    let input = reader
+        .lines()
+        .filter(|line| line.is_ok())
+        .map(|line| u16::from_str_radix(&line.unwrap(), 2).expect("parsing input line"))
+        .collect::<Vec<u16>>();
 
     let threshold = input.len() / 2;
+    let mut counts = [0; 16];
+
+    for value in input {
+        for idx in 0..16 {
+            if value & (1 << (15 - idx)) > 0 {
+                counts[idx] = counts[idx] + 1
+            }
+        }
+    }
+
+    let mut gamma_rate: u16 = 0;
+    let mut epsilon: u16 = 0;
+
+    for idx in 0..16 {
+        if counts[idx] == 0 {
+            continue;
+        }
+
+        if counts[idx] > threshold {
+            gamma_rate = gamma_rate | 1 << (15 - idx);
+        } else {
+            epsilon = epsilon | 1 << (15 - idx);
+        }
+    }
+
+    println!("Answer: {}", gamma_rate as u32 * epsilon as u32);
+}
+
+fn part_2(input: &mut dyn Read) {
+    let reader = BufReader::new(input);
+    let input = reader
+        .lines()
+        .filter(|line| line.is_ok())
+        .map(|line| u16::from_str_radix(&line.unwrap(), 2).expect("parsing input line"))
+        .collect::<Vec<u16>>();
+
     let mut counts = [0; 16];
 
     for value in &input {
@@ -12,9 +60,6 @@ fn main() {
         }
     }
 
-    let mut gamma_rate: u16 = 0;
-    let mut epsilon_rate: u16 = 0;
-
     let mut oxygen = input.clone();
     let mut co2 = input.clone();
 
@@ -22,12 +67,6 @@ fn main() {
         let bitmask = 1 << (15 - idx);
         if counts[idx] == 0 {
             continue;
-        }
-
-        if counts[idx] >= threshold {
-            gamma_rate = gamma_rate | bitmask;
-        } else {
-            epsilon_rate = epsilon_rate | bitmask;
         }
 
         if oxygen.len() > 1 {
@@ -51,13 +90,7 @@ fn main() {
 
     let co2_rate = co2.first().unwrap();
 
-    println!("Gamma Rate: {}", gamma_rate);
-    println!("Epsilon Rate: {}", epsilon_rate);
-    println!("Answer #1: {}", gamma_rate as u64 * epsilon_rate as u64);
-
-    println!("\nOxygen Generator Rating: {}", oxygen_rate);
-    println!("CO2 Scrubber rating: {}", co2_rate);
-    println!("Answer #2: {}", *oxygen_rate as u64 * *co2_rate as u64);
+    println!("Answer: {}", *oxygen_rate as u64 * *co2_rate as u64);
 }
 
 fn get_count(input: &Vec<u16>, bitmask: u16) -> usize {

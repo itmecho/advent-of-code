@@ -1,6 +1,6 @@
 use std::{
     fs::File,
-    io::{BufRead, BufReader},
+    io::{BufRead, BufReader, Read},
 };
 
 use itertools::Itertools;
@@ -63,12 +63,8 @@ pub struct Node {
     value: usize,
 }
 
-pub fn load_game() -> (Vec<usize>, Vec<Board>) {
-    let mut args = std::env::args();
-    args.next();
-
-    let f = File::open(args.next().expect("reading first argument (input file)")).unwrap();
-    let reader = BufReader::new(f);
+pub fn load_game(input: &mut dyn Read) -> (Vec<usize>, Vec<Board>) {
+    let reader = BufReader::new(input);
     let mut lines = reader
         .lines()
         .filter(|line| !line.as_ref().unwrap().is_empty());
