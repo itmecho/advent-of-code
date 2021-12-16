@@ -1,0 +1,8 @@
+[workspace]
+
+members = [
+	"common-rust",
+	"day-3",
+	"day-4",
+	"day-7",
+]
