@@ -56,22 +56,28 @@ fn part_2(input: &mut dyn Read) {
         dbg!(&line);
         let (input, output) = line.split_once('|').unwrap();
         let char_map = build_char_map(input.trim());
-        for display in output.trim().split_whitespace() {
-            let value = parse_actual_display(display, &char_map);
-            match value {
-                ZERO => {}
-                ONE => total += 1,
-                TWO => total += 2,
-                THREE => total += 3,
-                FOUR => total += 4,
-                FIVE => total += 5,
-                SIX => total += 6,
-                SEVEN => total += 7,
-                EIGHT => total += 8,
-                NINE => total += 9,
+
+        let mut result = 0;
+        for (idx, display) in output.trim().split_whitespace().enumerate() {
+            let display_value = parse_actual_display(display, &char_map);
+            let value = match display_value {
+                ZERO => 0,
+                ONE => 1,
+                TWO => 2,
+                THREE => 3,
+                FOUR => 4,
+                FIVE => 5,
+                SIX => 6,
+                SEVEN => 7,
+                EIGHT => 8,
+                NINE => 9,
                 v => panic!("invalid display value: {:08b}", v),
             };
+
+            result += value * 10u8.pow(idx as u32);
         }
+
+        total += result;
     }
 
     println!("Answer: {}", total);
