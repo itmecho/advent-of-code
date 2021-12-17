@@ -14,12 +14,11 @@ python3 main.py input.txt --part-2
 
 ## Rust
 
-Rust is a bit more complicated to run so I have done the different parts as separate binaries with a shared library.
-Your can use `cargo` to run them with the `--bin` flag:
-
 ```
-cargo run --bin part-1 input.txt
-cargo run --bin part-2 input.txt
+# Run part 1 with the test input
+cargo run -- --test
+# Run part 2 with the real input
+cargo run -- --part-2
 ```
 
 ## Go
