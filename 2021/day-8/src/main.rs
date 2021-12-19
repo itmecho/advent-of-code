@@ -53,14 +53,17 @@ fn part_2(input: &mut dyn Read) {
 
     for line in reader.lines() {
         let line = line.unwrap();
-        dbg!(&line);
         let (input, output) = line.split_once('|').unwrap();
-        let char_map = build_char_map(input.trim());
+        let display_map = get_display_map(input);
 
         let mut result = 0;
         for (idx, display) in output.trim().split_whitespace().enumerate() {
-            let display_value = parse_actual_display(display, &char_map);
-            let value = match display_value {
+            let parsed_display = parse_display(display);
+            let converted_display = display_map
+                .get(&parsed_display)
+                .expect("Somehow failed to end up with this display in the map");
+
+            let display_value = match *converted_display {
                 ZERO => 0,
                 ONE => 1,
                 TWO => 2,
@@ -71,10 +74,10 @@ fn part_2(input: &mut dyn Read) {
                 SEVEN => 7,
                 EIGHT => 8,
                 NINE => 9,
-                v => panic!("invalid display value: {:08b}", v),
+                _ => unreachable!(),
             };
 
-            result += value * 10u8.pow(idx as u32);
+            result += display_value as u32 * 10u32.pow(3 - idx as u32);
         }
 
         total += result;
@@ -83,30 +86,38 @@ fn part_2(input: &mut dyn Read) {
     println!("Answer: {}", total);
 }
 
-fn build_char_map(input: &str) -> HashMap<char, u8> {
-    let mut displays = [0u8; 10];
+fn get_display_map(input: &str) -> HashMap<u8, u8> {
+    let mut display_map: HashMap<u8, u8> = HashMap::new();
     let mut unknown = vec![];
     for value in input.split_whitespace().map(parse_display) {
         match value.count_ones() {
-            2 => displays[1] = value,
-            3 => displays[7] = value,
-            4 => displays[4] = value,
-            7 => displays[8] = value,
+            2 => {
+                display_map.insert(ONE, value);
+            }
+            3 => {
+                display_map.insert(SEVEN, value);
+            }
+            4 => {
+                display_map.insert(FOUR, value);
+            }
+            7 => {
+                display_map.insert(EIGHT, value);
+            }
             _ => unknown.push(value),
-        }
+        };
     }
 
     unknown.retain(|value| {
-        if (value ^ displays[8]).count_ones() == 1 {
-            if value | displays[4] == *value {
+        if (value ^ display_map.get(&EIGHT).unwrap()).count_ones() == 1 {
+            if value | display_map.get(&FOUR).unwrap() == *value {
                 // Must be 9 as the missing bit isn't in 4
-                displays[9] = *value;
-            } else if value | displays[1] == *value {
+                display_map.insert(NINE, *value);
+            } else if value | display_map.get(&ONE).unwrap() == *value {
                 // Must be 0 as the missing bit is in 4 but not 1
-                displays[0] = *value;
+                display_map.insert(ZERO, *value);
             } else {
                 // Process of elimination means it must be 6
-                displays[6] = *value;
+                display_map.insert(SIX, *value);
             }
             false
         } else {
@@ -116,37 +127,25 @@ fn build_char_map(input: &str) -> HashMap<char, u8> {
 
     // Now I just need to figure out 2, 3, and 5
     unknown.retain(|value| {
-        if *value == displays[6] & displays[9] {
+        if *value == display_map.get(&SIX).unwrap() & display_map.get(&NINE).unwrap() {
             // If the 2 missing bits are the missing bits from 6 and 9, it matches 5
-            displays[5] = *value
-        } else if (value | displays[9]).count_zeros() == 1 {
+            display_map.insert(FIVE, *value);
+        } else if (value | display_map.get(&NINE).unwrap()).count_zeros() == 1 {
             // Otherwise if there is only one bit missing when combined with 9, it must be 2
-            displays[2] = *value
+            display_map.insert(TWO, *value);
         } else {
             // Otherwise it must be a 3 because that is all that's left!
-            displays[3] = *value
+            display_map.insert(THREE, *value);
         }
         false
     });
 
-    assert!(unknown.len() == 0);
-
-    let mut char_map = HashMap::new();
-    char_map.insert('a', displays[1] ^ displays[7]);
-    char_map.insert('b', (displays[2] | displays[1]) ^ displays[8]);
-    char_map.insert('c', displays[6] ^ displays[8]);
-    char_map.insert('d', displays[0] ^ displays[8]);
-    char_map.insert('e', displays[9] ^ displays[8]);
-    char_map.insert('f', !displays[2] & displays[1]);
-    char_map.insert(
-        'g',
-        !char_map.iter().fold(0u8, |acc, (_, value)| acc | value) ^ 1,
-    );
-    for (k, v) in &char_map {
-        println!("{}: {:08b}", k, v);
+    let mut inverted_map = HashMap::new();
+    for (k, v) in display_map {
+        inverted_map.insert(v, k);
     }
 
-    char_map
+    inverted_map
 }
 
 fn parse_display(display: &str) -> u8 {
@@ -160,23 +159,4 @@ fn parse_display(display: &str) -> u8 {
         'g' => acc | G,
         c => panic!("unsupported character {}", c),
     })
-}
-
-fn parse_actual_display(display: &str, char_map: &HashMap<char, u8>) -> u8 {
-    let mut actual_display = String::new();
-    for c in display.chars() {
-        let new_char = match *char_map.get(&c).unwrap() {
-            A => 'a',
-            B => 'b',
-            C => 'c',
-            D => 'd',
-            E => 'e',
-            F => 'f',
-            G => 'g',
-            _ => panic!("dodgy input"),
-        };
-        println!("{} -> {}", c, new_char);
-        actual_display.push(new_char);
-    }
-    parse_display(&actual_display)
 }
