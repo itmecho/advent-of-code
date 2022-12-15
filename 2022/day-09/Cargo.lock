@@ -3,5 +3,5 @@
 version = 3
 
 [[package]]
-name = "day-9"
+name = "day-09"
 version = "0.1.0"
